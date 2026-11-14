@@ -196,6 +196,7 @@ def get_minimax_voices(voice_id: str | None = None) -> list[str]:
 
 
 def get_elevenlabs_voices(api_key: str) -> list[str]:
+    """Fetch the available ElevenLabs voice IDs for the configured API key."""
     if not api_key:
         return []
     try:
@@ -402,6 +403,7 @@ def _load_azure_voices() -> list[dict]:
 
 
 def get_all_azure_voices(filter_locals=None) -> list[str]:
+    """Return Azure TTS voice names in a stable, provider-agnostic format."""
     voices = []
     for item in _load_azure_voices():
         name = item["name"]
@@ -419,6 +421,7 @@ def get_all_azure_voices(filter_locals=None) -> list[str]:
 
 
 def parse_voice_name(name: str):
+    """Normalize a voice identifier by stripping Azure gender suffixes when present."""
     # zh-CN-XiaoyiNeural-Female
     # zh-CN-YunxiNeural-Male
     # zh-CN-XiaoxiaoMultilingualNeural-V2-Female
@@ -431,6 +434,7 @@ def parse_voice_name(name: str):
 
 
 def is_azure_v2_voice(voice_name: str):
+    """Return the Azure voice base name when the configured voice is a v2 variant."""
     voice_name = parse_voice_name(voice_name)
     if ":" not in voice_name and voice_name.endswith("-V2"):
         return voice_name.removesuffix("-V2").strip()
@@ -496,6 +500,7 @@ def is_voxcpm_voice(voice_name: str | None) -> bool:
 
 
 def get_fish_audio_api_key() -> str:
+    """Resolve the API key used by the Fish Audio text-to-speech provider."""
     configured_key = str(config.fish_audio.get("api_key", "") if hasattr(config, "fish_audio") and isinstance(config.fish_audio, dict) else "").strip()
     return configured_key or os.getenv("FISH_API_KEY", "").strip()
 

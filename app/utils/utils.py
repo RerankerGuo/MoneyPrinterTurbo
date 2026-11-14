@@ -16,6 +16,7 @@ from app.models import const
 
 
 def get_response(status: int, data: Any = None, message: str = ""):
+    """Build a simple API-style response payload for controllers and tests."""
     obj = {
         "status": status,
     }
@@ -27,6 +28,7 @@ def get_response(status: int, data: Any = None, message: str = ""):
 
 
 def to_json(obj):
+    """Serialize an object to a compact JSON string with safe fallbacks."""
     try:
         # Define a helper function to handle different types of objects
         def serialize(o):
@@ -60,6 +62,7 @@ def to_json(obj):
 
 
 def get_uuid(remove_hyphen: bool = False):
+    """Return a UUID string, optionally without separators for file/key names."""
     u = str(uuid4())
     if remove_hyphen:
         u = u.replace("-", "")
@@ -87,10 +90,12 @@ def normalize_clip_speed(value, default: float = 1.0) -> float:
 
 
 def root_dir():
+    """Return the project root that contains the application sources and assets."""
     return os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 
 def storage_dir(sub_dir: str = "", create: bool = False):
+    """Resolve the writable storage directory and optionally create nested folders."""
     d = os.path.join(root_dir(), "storage")
     if sub_dir:
         d = os.path.join(d, sub_dir)
@@ -101,6 +106,7 @@ def storage_dir(sub_dir: str = "", create: bool = False):
 
 
 def resource_dir(sub_dir: str = ""):
+    """Resolve the project resource tree used for fonts, songs, and public assets."""
     d = os.path.join(root_dir(), "resource")
     if sub_dir:
         d = os.path.join(d, sub_dir)
@@ -108,6 +114,7 @@ def resource_dir(sub_dir: str = ""):
 
 
 def task_dir(sub_dir: str = ""):
+    """Create or resolve the directory used to stage generated task outputs."""
     d = os.path.join(storage_dir(), "tasks")
     if sub_dir:
         d = os.path.join(d, sub_dir)
@@ -116,6 +123,7 @@ def task_dir(sub_dir: str = ""):
 
 
 def font_dir(sub_dir: str = ""):
+    """Resolve the runtime font cache directory, creating it if necessary."""
     d = resource_dir("fonts")
     if sub_dir:
         d = os.path.join(d, sub_dir)
@@ -124,6 +132,7 @@ def font_dir(sub_dir: str = ""):
 
 
 def song_dir(sub_dir: str = ""):
+    """Resolve the local background-music asset directory and ensure it exists."""
     d = resource_dir("songs")
     if sub_dir:
         d = os.path.join(d, sub_dir)
@@ -132,6 +141,7 @@ def song_dir(sub_dir: str = ""):
 
 
 def public_dir(sub_dir: str = ""):
+    """Resolve the web-public asset directory for generated or shared files."""
     d = resource_dir("public")
     if sub_dir:
         d = os.path.join(d, sub_dir)

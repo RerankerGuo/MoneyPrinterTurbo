@@ -159,15 +159,17 @@ def _parse_byte_range(
     range_header: str | None, file_size: int, request_id: str
 ) -> tuple[int, int]:
     """解析单段 HTTP Range，并把无效或越界请求稳定转换成 416。"""
+    # 416 只用于回应 Range 请求。没有 Range 时空文件也是完整表示，
+    # 返回 0 字节的 200，与 /download 的行为一致。
+    if not range_header:
+        return 0, file_size - 1
+
     if file_size <= 0:
         raise HttpException(
             task_id=request_id,
             status_code=416,
             message=f"{request_id}: requested range is not satisfiable",
         )
-
-    if not range_header:
-        return 0, file_size - 1
 
     try:
         # 视频播放器这里只需要单段 bytes range。拒绝多段请求可以避免返回体
@@ -245,9 +247,16 @@ def create_task(
         ):
             tm.video.validate_subtitle_colors(body)
             # 字体名可由 API 客户端直接提交，不能等到后台渲染时才发现路径越界。
-            # 这里与渲染层共用目录边界校验，让非法请求在创建付费任务前返回 400。
-            file_security.resolve_path_within_directory(
-                utils.font_dir(), body.font_name or "STHeitiMedium.ttc"
+            # 这里与渲染层共用目录边界校验，让非法请求在创建付费任务前返回 403/404。
+            # Route the font pre-check through the file-serving
+            # wrapper so the 403/404 error codes match the other
+            # task-output paths in this file instead of 400. The
+            # create_task outer except ValueError no longer covers
+            # this branch.
+            _resolve_path_within_directory(
+                utils.font_dir(),
+                body.font_name or "STHeitiMedium.ttc",
+                request_id,
             )
         task = {
             "task_id": task_id,
